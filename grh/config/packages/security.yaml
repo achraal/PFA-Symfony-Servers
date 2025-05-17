@@ -1,0 +1,42 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: true
+            provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                default_target_path: /home
+            logout:
+                path: app_logout
+                target: app_login
+            access_denied_url: /login
+
+    access_control:
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/home, roles: ROLE_USER }
+        - { path: ^/employe, roles: ROLE_USER }
+        - { path: ^/candidature, roles: ROLE_USER }
+        - { path: ^/timesheet, roles: ROLE_USER }
+        - { path: ^/contrat, roles: ROLE_USER }
+        - { path: ^/demandeConge, roles: ROLE_USER }
+        - { path: ^/ajout, roles: ROLE_USER }
+        - { path: ^/ajoutContrat, roles: ROLE_USER }
+        - { path: ^/ajoutCandidature, roles: ROLE_USER }
+        - { path: ^/ajoutTimesheet, roles: ROLE_USER }
+        - { path: ^/ajoutDemandeConge, roles: ROLE_USER }
+        - { path: ^/dashboard, roles: ROLE_USER }

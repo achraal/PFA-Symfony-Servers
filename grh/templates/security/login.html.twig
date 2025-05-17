@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<style>
+  .login-container {
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2.5rem 3rem;
+    background: #f9f9f9;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 121, 107, 0.1);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  h2 {
+    text-align: center;
+    color: #004d40;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+
+  .alert-danger {
+    background-color: #f9d6d5;
+    color: #c62828;
+    border: 1px solid #e57373;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #004d40;
+    font-size: 1rem;
+  }
+
+  form input[type="email"],
+  form input[type="password"] {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 1.5rem;
+    border: 2px solid #b2dfdb;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+  }
+
+  form input[type="email"]:focus,
+  form input[type="password"]:focus {
+    border-color: #00796b;
+    outline: none;
+  }
+
+  .checkbox {
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    color: #004d40;
+  }
+
+  .checkbox input[type="checkbox"] {
+    margin-right: 0.5rem;
+    cursor: pointer;
+  }
+
+  button[type="submit"] {
+    width: 100%;
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    color: #e8f5e9;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 12px 0;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+
+  button[type="submit"]:hover,
+  button[type="submit"]:focus {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    transform: translateY(-3px);
+    outline: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .login-container {
+      margin: 2rem 1rem;
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>
+
+<div class="login-container">
+  <h2>Connexion</h2>
+
+  {% if error %}
+    <div class="alert-danger">Identifiants incorrects.</div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    <label for="username">Email :</label>
+    <input type="email" name="_username" id="username" value="{{ last_username }}" required autofocus>
+
+    <label for="password">Mot de passe :</label>
+    <input type="password" name="_password" id="password" required>
+
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" name="_remember_me"> Remember me
+      </label>
+    </div>
+
+    <button type="submit">Se connecter</button>
+  </form>
+  <div class="auth-links" style="text-align:center; margin-top:1rem; font-size:0.95rem;">
+  <span>Pas encore de compte ?</span>
+  <a href="{{ path('app_register') }}">Inscription</a>
+</div>
+
+</div>
+
+{% endblock %}

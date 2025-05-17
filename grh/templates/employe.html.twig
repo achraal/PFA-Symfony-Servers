@@ -1,0 +1,305 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Employé{% endblock %}
+
+{% block body %}
+
+<style>
+/* Conteneur scroll horizontal si besoin */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 2rem;
+}
+
+/* Style global du tableau */
+table.table {
+  width: 100%;
+  min-width: 1100px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  color: #333333; /* gris foncé neutre */
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #dddddd; /* bordure gris clair */
+}
+
+/* En-tête du tableau */
+table.table thead tr {
+  background-color: #e3f2fd; /* bleu très clair, discret */
+  color: #0d47a1; /* bleu foncé */
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #90caf9;
+}
+
+table.table thead th {
+  padding: 12px 16px;
+  border: none;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Lignes du corps avec alternance de couleurs */
+table.table tbody tr:nth-child(odd) {
+  background-color: #fafafa; /* gris très clair */
+}
+
+table.table tbody tr:nth-child(even) {
+  background-color: #ffffff; /* blanc */
+}
+
+/* Survol des lignes */
+table.table tbody tr:hover {
+  background-color: #bbdefb; /* bleu clair doux */
+}
+
+/* Cellules */
+table.table tbody td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #eeeeee; /* gris très clair */
+  color: #333333;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 0.95rem;
+}
+
+/* Colonnes actions plus étroites */
+table.table td[data-label="Modifier"],
+table.table td[data-label="Supprimer"],
+table.table th:last-child,
+table.table th:nth-last-child(2) {
+  width: 1%;
+  min-width: 100px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Colonnes dates */
+table.table td[data-label="Date Embauche"],
+table.table th[data-label="Date Embauche"] {
+  min-width: 120px;
+  max-width: 160px;
+  white-space: nowrap;
+}
+
+/* Colonnes Contrat ID */
+table.table td[data-label="Contrat ID"],
+table.table th[data-label="Contrat ID"] {
+  max-width: 500px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #555555; /* gris moyen */
+}
+
+/* Colonnes Email */
+table.table td[data-label="Email"],
+table.table th[data-label="Email"] {
+  min-width: 200px;
+  white-space: nowrap;
+}
+
+/* Boutons Modifier et Supprimer */
+a.btn-modifier, button.btn-danger {
+  padding: 7px 15px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  user-select: none;
+}
+
+/* Bouton Modifier - bleu doux */
+a.btn-modifier {
+  background: #64b5f6;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(100, 181, 246, 0.4);
+}
+
+a.btn-modifier:hover,
+a.btn-modifier:focus {
+  background: #42a5f5;
+  box-shadow: 0 6px 18px rgba(66, 165, 245, 0.7);
+  outline: none;
+  text-decoration: none;
+}
+
+/* Bouton Supprimer - rouge doux */
+button.btn-danger {
+  background: #ef9a9a;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(239, 154, 154, 0.6);
+  border: none;
+}
+
+button.btn-danger:hover,
+button.btn-danger:focus {
+  background: #e57373;
+  box-shadow: 0 6px 18px rgba(229, 115, 115, 0.8);
+  outline: none;
+}
+
+/* Alertes */
+.alert {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.alert-success {
+  background-color: #d0f0d8;
+  color: #2e7d32;
+  border: 1px solid #81c784;
+}
+
+.alert-error, .alert-danger {
+  background-color: #f9d6d5;
+  color: #c62828;
+  border: 1px solid #e57373;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  table.table {
+    min-width: 700px;
+    font-size: 0.9rem;
+  }
+
+  table.table thead {
+    display: none;
+  }
+
+  table.table tbody tr {
+    display: block;
+    margin-bottom: 1.5rem;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 1rem;
+  }
+
+  table.table tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  table.table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  table.table tbody td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #1565c0; /* bleu foncé */
+    flex-basis: 40%;
+    text-transform: uppercase;
+  }
+
+  /* Boutons en ligne */
+  .card-body {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  a.btn-modifier, button.btn-danger {
+    flex: 1 1 45%;
+    min-width: 140px;
+  }
+}
+
+</style>
+
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+      <thead>
+          <tr>
+              {# <th scope="col">ID</th> #}
+              <th scope="col">Nom Complet</th>
+              {# <th scope="col">Prénom</th> #}
+              <th scope="col">Email</th>
+              <th scope="col">Poste</th>
+              <th scope="col">Salaire</th>
+              <th scope="col">Embauche</th>
+              <th scope="col">Contrat ID</th>
+              <th scope="col"></th>
+              <th scope="col"></th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for employe in employe %}
+              <tr>
+                  {# <td data-label="ID">{{ employe.id }}</td> #}
+                  <td data-label="Nom">{{ employe.nom }} {{ employe.prenom }}</td>
+                  {# <td data-label="Prénom">{{ employe.prenom }}</td> #}
+                  <td data-label="Email">{{ employe.email }}</td>
+                  <td data-label="Poste">{{ employe.poste }}</td>
+                  <td data-label="Salaire">{{ employe.salaire }}</td>
+                  <td data-label="Date Embauche">{{ employe.DateEmbauche }}</td>
+                  <td data-label="Contrat ID">
+                      {% for contrat in employe.contrat %}
+                          {{ contrat.id }}{% if not loop.last %}, {% endif %}
+                      {% else %}
+                          Aucun contrat
+                      {% endfor %}
+                  </td>
+                  <td data-label="Modifier">
+                      <a href="{{ path('modifier', {'id': employe.id}) }}" class="btn-modifier">Modifier</a>
+                  </td>
+                  <td data-label="Supprimer">
+                      <form method="post" action="{{ path('supprimer', {'id': employe.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet employé ?');">
+                          <input type="hidden" name="_method" value="POST">
+                          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ employe.id) }}">
+                          <button class="btn-danger" type="submit">Supprimer</button>
+                      </form>
+                  </td>
+              </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+</div>
+
+{% endblock %}

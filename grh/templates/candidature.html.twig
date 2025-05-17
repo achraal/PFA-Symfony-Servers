@@ -1,0 +1,224 @@
+{% extends "base.html.twig" %}
+{% block title %}Candidature{% endblock %}
+{% block body %}
+
+<style>
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.card-header h3 {
+  margin: 0 0 0.25rem 0;
+  color: #357ABD;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.card-header small {
+  color: #7f8c8d;
+}
+
+.card-body p {
+  margin: 0.5rem 0;
+  color: #34495e;
+  font-size: 0.95rem;
+}
+
+.link-doc {
+  color: #3a9d9d;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link-doc:hover,
+.link-doc:focus {
+  text-decoration: underline;
+  color: #2a7f7f;
+}
+
+.card-footer {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 8px 18px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 25px;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  text-decoration: none;
+  justify-content: center;
+}
+
+.btn-modifier {
+  background: linear-gradient(135deg, #3a9d9d, #2a7f7f);
+  color: #e8f5f5;
+  box-shadow: 0 6px 15px rgba(42, 127, 127, 0.4);
+  border: none;
+}
+
+.btn-modifier:hover,
+.btn-modifier:focus {
+  background: linear-gradient(135deg, #2a7f7f, #1b5f5f);
+  box-shadow: 0 8px 25px rgba(27, 95, 95, 0.7);
+  outline: none;
+  text-decoration: none;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #e57373, #c62828);
+  color: #fff;
+  box-shadow: 0 6px 15px rgba(198, 40, 40, 0.6);
+  border: none;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+  background: linear-gradient(135deg, #c62828, #8e0000);
+  box-shadow: 0 8px 25px rgba(142, 0, 0, 0.8);
+  outline: none;
+}
+
+/* Alertes */
+.alert {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.alert-success {
+  background-color: #d0f0d8;
+  color: #2e7d32;
+  border: 1px solid #81c784;
+}
+
+.alert-error, .alert-danger {
+  background-color: #f9d6d5;
+  color: #c62828;
+  border: 1px solid #e57373;
+}
+
+/* Style pour les documents intégrés */
+.embed-doc {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+}
+
+.img-doc {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+}
+</style>
+
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+<div class="cards-container">
+  {% for candidature in candidature %}
+    <div class="card">
+      <div class="card-header">
+        <h3>{{ candidature.poste }}</h3>
+        {# <small>ID: {{ candidature.id }}</small> #}
+      </div>
+      <div class="card-body">
+        <p><strong>Candidat :</strong> {{ candidature.candidatNom }}</p>
+        <p><strong>Email :</strong> {{ candidature.email }}</p>
+        <p><strong>Statut :</strong> {{ candidature.statut }}</p>
+        <p><strong>Commentaire :</strong> {{ candidature.commentaire is not empty ? candidature.commentaire : 'Aucun Commentaire' }}</p>
+
+        {# Affichage CV #}
+        <p><strong>CV :</strong></p>
+        {% if candidature.cv %}
+          {% set cvExtension = candidature.cv|split('.')|last|lower %}
+          {% if cvExtension in ['pdf'] %}
+            <embed src="{{ asset('uploads/' ~ candidature.cv) }}" type="application/pdf" class="embed-doc" />
+          {% elseif cvExtension in ['jpg', 'jpeg', 'png', 'gif'] %}
+            <img src="{{ asset('uploads/' ~ candidature.cv) }}" alt="CV de {{ candidature.candidatNom }}" class="img-doc" />
+          {% else %}
+            <a href="{{ asset('uploads/' ~ candidature.cv) }}" target="_blank" class="link-doc">Télécharger CV</a>
+          {% endif %}
+        {% else %}
+          <span>Aucun CV</span>
+        {% endif %}
+
+        {# Affichage Lettre de motivation #}
+        <p><strong>Lettre de motivation :</strong></p>
+        {% if candidature.lettreMotivation %}
+          {% set lettreExtension = candidature.lettreMotivation|split('.')|last|lower %}
+          {% if lettreExtension in ['pdf'] %}
+            <embed src="{{ asset('uploads/' ~ candidature.lettreMotivation) }}" type="application/pdf" class="embed-doc" />
+          {% elseif lettreExtension in ['jpg', 'jpeg', 'png', 'gif'] %}
+            <img src="{{ asset('uploads/' ~ candidature.lettreMotivation) }}" alt="Lettre de motivation de {{ candidature.candidatNom }}" class="img-doc" />
+          {% else %}
+            <a href="{{ asset('uploads/' ~ candidature.lettreMotivation) }}" target="_blank" class="link-doc">Télécharger Lettre</a>
+          {% endif %}
+        {% else %}
+          <span>Aucune Lettre de motivation</span>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        <a href="{{ path('modifierCandidature', {'id': candidature.id}) }}" class="btn btn-modifier">Modifier</a>
+        <form method="post" action="{{ path('supprimerCandidature', {'id': candidature.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?');" style="display:inline-block;">
+          <input type="hidden" name="_method" value="POST">
+          <input type="hidden" name="_token" value="{{ csrf_token('delete_candidature' ~ candidature.id) }}">
+          <button class="btn btn-danger" type="submit">Supprimer</button>
+        </form>
+      </div>
+    </div>
+  {% else %}
+    <p style="text-align:center; color:#7f8c8d; font-family: 'Poppins', sans-serif;">Aucune candidature trouvée.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}

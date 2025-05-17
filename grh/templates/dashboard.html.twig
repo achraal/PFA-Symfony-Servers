@@ -1,0 +1,388 @@
+{% extends "base.html.twig" %}
+{% block title %}Dashboard RH{% endblock %}
+
+{% block javascripts %}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // FullCalendar
+        var calendarEl = document.getElementById('calendar');
+        if (calendarEl) {
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listWeek'
+                },
+                events: {{ congesEventsJson|raw }},
+                eventDisplay: 'block',
+                height: 340, // Plus petit !
+                width: '100%',
+            });
+            calendar.render();
+        }
+        // Chart.js Pie
+        var pie = document.getElementById('candidaturesPie');
+        if (pie) {
+            var ctx = pie.getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: [
+                        {% for poste in candidaturesParPoste %}
+                            "{{ poste.label }}"{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        data: [
+                            {% for poste in candidaturesParPoste %}
+                                {{ poste.count }}{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        ],
+                        backgroundColor: [
+                            '#3fc0c7','#fcc404','#f2c4c9','#7ed957','#ff8888','#9de3ff','#f7d6e0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 13 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+    
+    </script>
+{% endblock %}
+
+
+{% block body %}
+<style>
+body {
+  background: #f5f7fa;
+  font-family: 'Poppins', Arial, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: #004d40;
+  font-weight: 700;
+  margin: 2rem 0 2.5rem 0;
+}
+
+/* Cards */
+.card {
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(42,127,127,0.10);
+  border: none;
+  background: #fff;
+  overflow: hidden;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #4a90e2, #357ABD);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  padding: 1rem 1.25rem;
+  border-bottom: none;
+}
+
+.card-body {
+  padding: 1.5rem 1.25rem;
+  font-size: 1.07rem;
+  color: #34495e;
+}
+
+/* Graphiques charts-css */
+.charts-css {
+  width: 100%;
+  min-width: 220px;
+  max-width: 100%;
+  margin: 0.5rem 0;
+  --color-1: #3fc0c7;
+  --color-2: #fcc404;
+  --color-3: #f2c4c9;
+  --color-4: #7ed957;
+  --color-5: #ff8888;
+  --color-6: #9de3ff;
+  --color-7: #f7d6e0;
+}
+
+
+.charts-css.column td,
+.charts-css.bar td {
+  background: linear-gradient(135deg, #4a90e2 60%, #7ed957 100%);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(42,127,127,0.09);
+  position: relative;
+}
+
+.charts-css .data {
+  font-size: 0.98rem;
+  color: #004d40;
+  font-weight: 600;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.charts-css caption {
+  text-align: left;
+  font-size: 1.02rem;
+  color: #357ABD;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.charts-css.show-labels td::after {
+  color: #357ABD;
+  font-size: 0.97rem;
+}
+
+/* FullCalendar */
+#calendar {
+  background: #fafdff;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(42,127,127,0.10);
+  padding: 1rem;
+  margin: 0 auto;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #357ABD;
+}
+
+.fc .fc-button {
+  background: linear-gradient(135deg, #4a90e2, #357ABD);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.fc .fc-button:hover, .fc .fc-button:focus {
+  background: linear-gradient(135deg, #357ABD, #4a90e2);
+  color: #fff;
+  outline: none;
+}
+
+.fc .fc-daygrid-day-number {
+  color: #357ABD;
+  font-weight: 600;
+}
+
+/* Chart.js Pie (canvas) */
+#candidaturesPie {
+  background: #fafdff;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(42,127,127,0.10);
+  padding: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .row {
+    flex-direction: column;
+  }
+  .col-md-4, .col-md-6 {
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+  .card {
+    margin-bottom: 1.5rem;
+  }
+  #calendar {
+    min-width: 0;
+    padding: 0.5rem;
+  }
+}
+</style>
+
+<h1>Tableau de bord RH</h1>
+
+<div class="row">
+    <!-- Employés -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">Nombre total d'employés</div>
+            <div class="card-body">
+                <h2>{{ totalEmployes }}</h2>
+            </div>
+        </div>
+        <div class="card mb-4">
+    <div class="card-header">Évolution du nombre d'employés</div>
+    <div class="card-body">
+    <div style="max-width: 100%; min-width: 300px; margin: auto;">
+<table class="charts-css line show-labels show-primary-axis"
+       style="height: 150px; width: 100%; table-layout: fixed; overflow-wrap: break-word;">
+        <caption>Évolution des employés</caption>
+        <tbody>
+            {% for point in evolutionEmployes %}
+            <tr>
+                <td style="--start:{{ point.start }}; --end:{{ point.end }};">
+                    <span class="data">{{ point.value }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+        {# <div style="max-width: 420px; min-width: 220px; margin: auto;">
+            <table class="charts-css line show-labels show-primary-axis" style="height: 160px;">
+                <caption>Évolution des employés</caption>
+                <tbody>
+                    {% for point in evolutionEmployes %}
+                    <tr>
+                        <td style="--start:{{ point.start }}; --end:{{ point.end }};">
+                            <span class="data">{{ point.value }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div> #}
+    </div>
+</div>
+
+    </div>
+
+    <!-- Contrats -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">Contrats</div>
+            <div class="card-body">
+                <p>Contrats actifs : <strong>{{ contratsActifs }}</strong></p>
+                <p>Contrats expirant dans 3 mois : <strong>{{ contratsExpiration3Mois }}</strong></p>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header">Distribution des salaires</div>
+            <div class="card-body">
+                <table class="charts-css column show-labels show-primary-axis">
+                    <caption>Salaires</caption>
+                    <tbody>
+                        {% for salaire in salairesDistribution %}
+                        <tr>
+                            <td style="--size:{{ salaire.ratio }};">
+                                <span class="data">{{ salaire.range }} ({{ salaire.count }})</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div> 
+
+    <!-- Congés -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">Demandes de congés</div>
+            <div class="card-body">
+                <p>En attente : <strong>{{ congesEnAttente }}</strong></p>
+                <p>Approuvées ce mois-ci : <strong>{{ congesApprouvesMois }}</strong></p>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-header">Types de congés les plus demandés</div>
+            <div class="card-body">
+                <table class="charts-css bar show-labels show-primary-axis">
+                    <caption>Types de congés</caption>
+                    <tbody>
+                        {% for type in typesConges %}
+                        <tr>
+                            <td style="--size:{{ type.ratio }};">
+                                <span class="data">{{ type.label }} ({{ type.count }})</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Calendrier des congés planifiés -->
+<div class="card mb-4">
+    <div class="card-header">Calendrier des congés planifiés</div>
+    <div class="card-body d-flex justify-content-center">
+        <div id="calendar" style="min-width: 400px; max-width: 100%; width: 100%; min-height: 480px;"></div>
+    </div>
+</div>
+
+<!-- Feuilles de temps -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">Feuilles de temps ce mois-ci</div>
+            <div class="card-body">
+                <p>Nombre de feuilles de temps : <strong>{{ timesheetsMois }}</strong></p>
+                <p>Heures de travail totales : <strong>{{ heuresTravailTotales }}</strong></p>
+                <p>Heures supplémentaires totales : <strong>{{ heuresSupTotales }}</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">Heures de travail par employé</div>
+            <div class="card-body">
+                <table class="charts-css bar show-labels show-primary-axis">
+                    <caption>Heures par employé</caption>
+                    <tbody>
+                        {% for emp in heuresParEmploye %}
+                        <tr>
+                            <td style="--size:{{ emp.ratio }};">
+                                <span class="data">{{ emp.nom }} ({{ emp.heures }})</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Candidatures -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">Candidatures</div>
+            <div class="card-body">
+                <p>Total reçues : <strong>{{ totalCandidatures }}</strong></p>
+                <p>Nouvelles ce mois-ci : <strong>{{ nouvellesCandidaturesMois }}</strong></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">Répartition des candidatures par poste</div>
+            <div class="card-body d-flex justify-content-center">
+                <div style="max-width: 380px; margin: auto;">
+                    <canvas id="candidaturesPie" width="400" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

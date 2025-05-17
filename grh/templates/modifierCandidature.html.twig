@@ -1,0 +1,181 @@
+{% extends "base.html.twig" %}
+{% block title %}Modification Candidature{% endblock %}
+
+{% block body %}
+
+<style>
+  form {
+    max-width: 520px;
+    margin: 2rem auto;
+    padding: 2rem 2.5rem;
+    background: #f9f9f9;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 121, 107, 0.1);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #004d40;
+    font-size: 1rem;
+  }
+
+  form input[type="text"],
+  form input[type="email"],
+  form input[type="mail"],
+  form textarea,
+  form input[type="file"] {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 1.5rem;
+    border: 2px solid #b2dfdb;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+  }
+
+  form input[type="text"]:focus,
+  form input[type="email"]:focus,
+  form input[type="mail"]:focus,
+  form textarea:focus,
+  form input[type="file"]:focus {
+    border-color: #00796b;
+    outline: none;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .file-links {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .file-links a {
+    color: #357ABD;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .file-links a:hover {
+    text-decoration: underline;
+  }
+
+  input[type="submit"] {
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    color: #e8f5e9;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+    transition: background 0.3s ease, transform 0.2s ease;
+    width: 100%;
+  }
+
+  input[type="submit"]:hover,
+  input[type="submit"]:focus {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    transform: translateY(-3px);
+    outline: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 540px) {
+    form {
+      padding: 1.5rem 1.8rem;
+      margin: 1rem;
+    }
+  }
+  button[type="submit"],
+a.btn-secondary {
+  display: inline-block;
+  padding: 10px 25px;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 30px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+button[type="submit"] {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: #e8f5e9;
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+  margin-right: 1rem;
+}
+
+a.btn-secondary {
+  background: #ccc;
+  color: #333;
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+a.btn-secondary:hover,
+a.btn-secondary:focus {
+  background: #999;
+  color: #fff;
+  outline: none;
+}
+</style>
+
+<form action="/modificationCandidature" method="post" enctype="multipart/form-data" novalidate>
+  <input type="hidden" name="id" value="{{ candidature.id }}" required>
+
+  <label for="poste">Poste :</label>
+  <input type="text" id="poste" name="poste" value="{{ candidature.poste }}" required>
+
+  <label for="candidatNom">Nom du Candidat :</label>
+  <input type="text" id="candidatNom" name="candidatNom" value="{{ candidature.candidatNom }}" required>
+
+  <label for="email">Email :</label>
+  <input type="email" id="email" name="email" value="{{ candidature.email }}">
+
+  <label for="statut">Statut :</label>
+  <input type="text" id="statut" name="statut" value="{{ candidature.statut }}" required>
+
+  <label for="commentaire">Commentaire (justification de la décision) :</label>
+  <textarea id="commentaire" name="commentaire">{{ candidature.commentaire }}</textarea>
+
+  <div class="file-links">
+    <strong>CV actuel :</strong>
+    {% if candidature.cv %}
+      <a href="{{ asset('uploads/' ~ candidature.cv) }}" target="_blank" rel="noopener">Télécharger</a>
+    {% else %}
+      Aucun
+    {% endif %}
+  </div>
+
+  <label for="cv">Nouveau CV (PDF, facultatif) :</label>
+  <input type="file" id="cv" name="cv" accept="application/pdf">
+
+  <div class="file-links">
+    <strong>Lettre de motivation actuelle :</strong>
+    {% if candidature.lettreMotivation %}
+      <a href="{{ asset('uploads/' ~ candidature.lettreMotivation) }}" target="_blank" rel="noopener">Télécharger</a>
+    {% else %}
+      Aucune
+    {% endif %}
+  </div>
+
+  <label for="lettre_motivation">Nouvelle lettre de motivation (PDF, facultatif) :</label>
+  <input type="file" id="lettre_motivation" name="lettre_motivation" accept="application/pdf">
+
+  <button type="submit">Valider</button>
+  <a href="{{ path('candidature') }}" class="btn-secondary">Annuler</a>
+</form>
+
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html.twig" %}
+{% block title %}Ajout Candidature{% endblock %}
+
+{% block body %}
+
+<style>
+  form {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem 2.5rem;
+    background: #f9f9f9;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 121, 107, 0.1);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #004d40;
+    font-size: 1rem;
+  }
+
+  form input[type="text"],
+  form input[type="email"],
+  form input[type="file"] {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 1.5rem;
+    border: 2px solid #b2dfdb;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+  }
+
+  form input[type="text"]:focus,
+  form input[type="email"]:focus,
+  form input[type="file"]:focus {
+    border-color: #00796b;
+    outline: none;
+  }
+
+  form input[type="submit"] {
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    color: #e8f5e9;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+    transition: background 0.3s ease, transform 0.2s ease;
+    width: 100%;
+  }
+
+  form input[type="submit"]:hover,
+  form input[type="submit"]:focus {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+    transform: translateY(-3px);
+    outline: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 520px) {
+    form {
+      padding: 1.5rem 1.8rem;
+      margin: 1rem;
+    }
+  }
+</style>
+
+<form action="ajouterCandidature" method="post" enctype="multipart/form-data" novalidate>
+  <label for="poste">Poste :</label>
+  <input type="text" id="poste" name="poste" required>
+
+  <label for="candidatNom">Nom du candidat :</label>
+  <input type="text" id="candidatNom" name="candidatNom" required>
+
+  <label for="email">Email :</label>
+  <input type="email" id="email" name="email">
+
+  <label for="statut">Statut :</label>
+  <input type="text" id="statut" name="statut" required>
+
+  <label for="cv">CV (PDF, obligatoire) :</label>
+  <input type="file" id="cv" name="cv" accept="application/pdf" required>
+
+  <label for="lettre_motivation">Lettre de motivation (PDF, facultatif) :</label>
+  <input type="file" id="lettre_motivation" name="lettre_motivation" accept="application/pdf">
+
+  <input type="submit" value="Valider">
+</form>
+
+{% endblock %}
