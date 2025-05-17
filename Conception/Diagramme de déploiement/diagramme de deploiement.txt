@@ -1,0 +1,19 @@
+@startuml
+node "Serveur Fedora 41" as Server {
+  artifact "Application Symfony"
+  artifact "Serveur Web (HTTPD)"
+  artifact "Serveur DNS (BIND)"
+  artifact "Serveur DHCP (DHCPD)"
+  artifact "Base de Données (MariaDB)"
+}
+
+node "Client Utilisateur" as Client {
+  artifact "Navigateur Web"
+}
+
+node "Réseau Local" as Network
+
+Server -- Network
+Client -- Network
+
+@enduml

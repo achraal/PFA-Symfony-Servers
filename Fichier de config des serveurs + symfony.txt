@@ -1,0 +1,528 @@
+NB : sudo su pour travailler avec les commandes sans mettre la commande sudo, noubliez pas de fermer les fichiers avec Ctrl+X et mettez oui
+
+Installation 
+
+*PHP 8.1+ et extensions
+dnf install php php-cli php-fpm php-mysqlnd php-xml php-json php-mbstring php-intl php-sqlite3 php-pdo
+* MariaDB
+dnf install mariadb-server
+*Composer
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+*Symfony
+curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.rpm.sh' | sudo bash
+dnf install symfony-cli
+*Web HTTPD
+dnf install httpd*
+*Bind
+dnf install bind
+*Dhcpd
+dnf -y install dhcpd*
+dnf -y install dhcp-server
+*Phpmyadmin
+dnf install phpmyadmin
+
+Démarrage des serveurs
+
+systemctl start mariadb   
+systemctl enable mariadb
+systemctl start httpd   
+systemctl enable httpd
+systemctl start named   
+systemctl enable named 
+systemctl enable dhcpd
+
+
+Création du projet Symfony :
+cd /var/www/html
+git config --global user.email achraf@gmail.com    	# remplacer par votre mail
+git config --global user.name achraf 			# remplacer par votre prenom
+symfony new my_project --webapp
+
+
+Installation des paquets nécessaires pour Symfony
+cd my_project
+composer require symfony/orm-pack
+composer require --dev symfony/maker-bundle
+composer require twig
+
+
+Remplir l'application Symfony
+
+nano .env
+DATABASE_URL="mysql://root:password@127.0.0.1:3306/produits" 	# ajouter cette ligne et mettez en commentaire la ligne où il y a postgre, mettez à la place de password un mot de passe de votre choix
+
+Modification de Mariadb:
+
+mysql -u root
+MariaDB [(none)]> ALTER USER 'root'@'localhost' IDENTIFIED BY 'password';  # mettez votre mot de passe que vous l'avez mis dans .env
+MariaDB [(none)]> FLUSH PRIVILEGES;
+MariaDB [(none)]> EXIT;
+
+
+Création de la base de données :
+
+php bin/console doctrine:database:create
+php bin/console make:entity
+*Entrez le nom de la table (Produit) et ensuite no pour le TurboX
+*Creer le champs nom de type string et de taille 255 et mettez no pour nullable
+*Creer le champs description de type string et de taille 255 et mettez no pour nullable
+*Creer le champs qte de type integer et mettez no pour nullable ensuite appuyez sur entrée
+
+ajouter ces commandes
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+*mettez yes
+
+Verification de la création de la base :
+mysql -u root -p 	# après cette commande mettez le mot de passe que vous avez mis dans .env
+SHOW DATABASES;
+USE produits;
+SHOW TABLES;
+DESCRIBE produit; 
+select * from produit;  # logiquement c'est vide
+QUIT;
+
+Configuration du .htaccess :
+
+composer require symfony/apache-pack
+nano public/.htaccess 	# après cette commande ajouter à la fin du fichier ce qui suit
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+Modification du hostname : 
+
+hostnamectl hostname nom  # remplacer nom par votre prenom
+
+
+Suite de l'application symfony :
+
+nano src/Controller/Controller.php
+
+<?php
+namespace App\Controller; 
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Repository\ProduitRepository;
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Produit;
+
+class Controller extends AbstractController
+{
+    public function number(): Response
+    {
+        $number = random_int(0, 100);
+        return new Response(
+            '<html><body>Lucky number: '.$number.'</html></body>'
+        );
+    }
+
+    public function home(ProduitRepository $produitRepository)
+    {
+        $produits = $produitRepository->findAll();
+        return $this->render("home.html.twig",["produits"=>$produits]);
+    }
+
+    public function ajout()
+    {
+        return $this->render("ajout.html.twig");
+    }
+
+    public function ajoutProduit(Request $request, EntityManagerInterface $entityManager)
+    {
+        $nom= $request->request->get("nom");
+        $description= $request->request->get("description");
+        $qte= $request->request->get("qte");
+
+        $produit = new Produit();
+
+        $produit->setNom($nom);
+        $produit->setDescription($description);
+        $produit->setQte($qte);
+
+        $entityManager->persist($produit);
+        $entityManager->flush();
+
+        return $this->render("ajoutProduit.html.twig");
+
+    }
+
+    public function modifier(int $id, EntityManagerInterface $entityManager,Request $request)
+    {    
+         $produit=$entityManager->getRepository(Produit ::class)->find($id);
+         return $this->render('modifier.html.twig', ['produit' => $produit]);
+    }
+
+    public function modifierProduit(EntityManagerInterface $entityManager, Request $request)
+    {
+        $id = $request->request->get("id");
+        $produit = $entityManager->getRepository(Produit::class)->find($id);
+        $nom = $request->request->get("nom");
+        $description = $request->request->get("description");
+        $qte = $request->request->get("quantite");
+
+        $produit->setNom($nom);
+        $produit->setDescription($description);
+        $produit->setQte((int)$qte);
+
+        $entityManager->flush();
+        return $this->redirect('/home');
+    }
+
+    public function supprimer(int $id, EntityManagerInterface $entityManager, Request $request)
+    {
+        $produit = $entityManager->getRepository(Produit::class)->find($id);
+        $entityManager->remove($produit);
+        $entityManager->flush();
+        return $this->redirect('/home');
+    }
+}
+
+*ensuite les routes : 
+nano config/routes.yaml
+
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+number:
+    path: /number
+    controller: App\Controller\Controller::number
+
+home:
+    path: /home
+    controller: App\Controller\Controller::home
+
+ajout:
+    path: /ajout
+    controller: App\Controller\Controller::ajout
+
+ajoutProduit:
+    path: /ajoutProduit
+    controller: App\Controller\Controller::ajoutProduit
+
+modifier:
+    path: /modifier/{id}
+    controller: App\Controller\Controller::modifier
+
+modifierProduit:
+    path: /modifierProduit
+    controller: App\Controller\Controller::modifierProduit
+
+supprimer:
+    path: /supprimer/{id}
+    controller: App\Controller\Controller::supprimer
+    
+*ensuite les templates :
+nano templates/base.html.twig    # dans le fichier effacer tous le contenu et coller ce qui suit
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        {% block stylesheets %}
+        	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        {% endblock %}
+
+        {% block javascripts %}
+            {% block importmap %}
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+            {% endblock %}
+        {% endblock %}
+    </head>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="home">Home</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="ajout">Ajouter produit</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="contact">Ajout Contact</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="homeContact">Home Contact</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+    <body>
+    <div class="container">
+        {% block body %}{% endblock %}
+    </div>
+    </body>
+</html>
+
+
+*ensuite :
+nano templates/home.html.twig
+
+{% extends "base.html.twig" %}
+{% block body %}<table class="table table-dark">
+  <thead>
+    <tr>
+      <th scope="col">Id</th>
+      <th scope="col">Nom</th>
+      <th scope="col">Description</th>
+      <th scope="col">Quantite</th>
+      <th scope="col">Action</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for produit in produits %}
+   <tr>
+      <th>{{produit.id}}</th>
+      <td>{{produit.nom}}</td>
+      <td>{{produit.description}}</td>
+      <td>{{produit.qte}}</td>
+      <td><a href="modifier/{{produit.ID}}">Modifier</a></td>
+      <td><a href="supprimer/{{produit.ID}}">Supprimer</a></td>
+   </tr>
+    {% endfor %}  
+  </tbody>
+</table>{% endblock %}
+
+
+*ensuite :
+nano templates/ajout.html.twig
+
+{% extends "base.html.twig" %}
+  {% block title %}ajout produit{% endblock %}
+    {% block body %}
+   
+   <form action="ajoutProduit" method="post">
+        Nom : <input type="text" name ="nom" required>
+        <br>
+         Description : <input type="text" name ="description" >
+        <br>
+         Quantité : <input type="number" name ="qte" required>
+        <br>
+        <input type="submit" value ="Valider">
+   </form>
+        {% endblock %}
+        
+*ensuite :
+nano templates/ajoutProduit.html.twig
+
+{% extends "base.html.twig" %}
+{% block title %}page d ajout{% endblock %}
+{% block body %}   
+     <h6>votre produit a été ajouté avec succes</h6>
+{% endblock %}
+
+*ensuite :
+nano templates/modifier.html.twig
+
+{% extends "base.html.twig" %}
+{% block title %}page de modification{% endblock %}
+
+{% block body %}
+    <h6>modifier un produit</h6>
+    <form action="/modifierProduit" method="post">
+        <div>
+        <input type="hidden"  name="id" value="{{ produit.id }}" required>
+           Nom : <input type="text"  name="nom" value="{{ produit.nom }}" required>
+        </div>
+        <div>
+            Description : <input type="text"  name="description" value="{{ produit.description }}" >
+        </div>                                                            
+        <div>
+           Quantité : <input type="number"  name="quantite" value="{{ produit.qte }}" required>
+        </div>
+        <div>
+            <button type="submit">Modifier</button>
+        </div>
+    </form>
+{% endblock %}
+
+Configuration d'une adresse ip statique
+
+nmcli connection add type ethernet ifname enp4s0f0 con-name enp4s0f0
+nmcli connection show      # Afficher les connexions existantes
+
+# Créer une nouvelle connexion ou modifier une existante
+nmcli connection modify enp4s0f0 ipv4.addresses 192.168.100.5/24
+nmcli connection modify enp4s0f0 ipv4.gateway 192.168.100.1
+nmcli connection modify enp4s0f0 ipv4.dns 192.168.100.2
+nmcli connection modify enp4s0f0 ipv4.method manual
+
+# Activer la connexion
+nmcli connection up enp4s0f0
+nmcli device show enp4s0f0
+ip address show enp4s0f0
+
+
+Configuration du serveur web HTTPD
+
+nano /etc/httpd/conf/httpd.conf
+
+#Verifier ces lignes s'ils existent
+
+ServerRoot "/etc/httpd"
+Listen 80
+Include conf.modules.d/*.conf
+User apache
+Group apache
+
+#Modifier cette ligne que vous trouverez
+ServerAdmin root@emsi.ma
+
+# Ajouter ces lignes
+ServerName achraf.emsi.ma    # remplacer achraf par votre hostname
+
+<VirtualHost 192.168.100.5:80>    
+    ServerAdmin root@emsi.ma
+    ServerName achraf.emsi.ma   #remplacer achraf par votre hostname
+    DocumentRoot /var/www/html/my_project/public
+    <Directory /var/www/html/my_project/public>
+        AllowOverride All
+        Order Allow,Deny
+        Allow from All
+    </Directory>
+</VirtualHost>
+
+#fermez le fichier et taper ces commandes
+
+systemctl restart httpd
+systemctl enable httpd
+setenforce 0
+
+
+Configuration du Bind (DNS)
+
+nano /etc/named.conf
+
+#Modifier
+	listen-on port 53 { 127.0.0.1; 192.168.100.5; };   
+	allow-query     { localhost; 192.168.100.0/24; };  
+
+# ensuite Ajouter ces lignes
+zone "emsi.ma" IN {
+	type master;
+	file "emsi.ma.zone";
+};
+
+zone ".168.192.in-addr.arpa" IN {  
+        type master;
+        file "emsi.ma.rev";
+};
+
+*fermez le fichier ensuite
+
+nano /var/named/emsi.ma.zone
+$TTL 1D
+@	IN SOA	achraf.emsi.ma. root.emsi.ma. (   # remplacer achraf par votre hostname 
+					0	; serial
+					1D	; refresh
+					1H	; retry
+					1W	; expire
+					3H )	; minimum
+		IN	NS	achraf.emsi.ma.  # remplacer achraf par votre hostname 
+achraf		IN	A	192.168.100.5   # ici remplacer au début de la ligne achraf avec votre hostname 
+my_project	IN	CNAME	emsi.ma
+
+*ensuite fermez le fichier
+
+nano /var/named/emsi.ma.rev
+$TTL 1D
+@	IN SOA	achraf.emsi.ma. root.emsi.ma. (
+					0	; serial
+					1D	; refresh
+					1H	; retry
+					1W	; expire
+					3H )	; minimum
+	IN	NS	achraf.emsi.ma.
+5	IN	PTR	achraf.emsi.ma.		#remplacer achraf par votre hostname dès que vous le trouver dans le fichier, et remplacer 131 par le dernier bit de votre adresse copiée
+
+*ensuite fermer le fichier
+
+nano /etc/hosts
+
+#Ajouter à la fin
+192.168.100.5	emsi.ma    # remplacer avec l'adresse copiée
+
+*ensuite fermer le fichier et taper les commandes ci dessous
+
+chown named:root /var/named/emsi.ma*
+nano /etc/resolv.conf
+
+# vous trouverez search et nameserver effacer leur contenu et ajouter ceci
+
+search emsi.ma.
+nameserver 192.168.100.5
+
+*ensuite fermer le fichier
+
+systemctl restart named
+systemctl enable named
+
+Verification du Bind :
+
+nslookup
+
+*après cette commande taper 192.168.100.5 ensuite entrée après taper emsi.ma
+
+
+
+Exemple de configuration du DHCP :
+
+cp /usr/share/doc/dhcp-server/dhcpd.conf.example /etc/dhcp/dhcp.conf
+nano /etc/dhcp/dhcp.conf
+
+subnet 192.168.100.0 netmask 255.255.255.0 {  
+  range 192.168.100.20 192.168.100.50;
+  option domain-name-servers 192.168.100.5;
+  option domain-name "emsi.ma";
+  option routers 192.168.100.1;
+  option broadcast-address 192.168.100.255;
+  option subnet-mask 255.255.255.0;
+  default-lease-time 600;
+  max-lease-time 7200;
+}
+
+systemctl restart dhcpd
+systemctl enable dhcpd
+
+Configuration du Phpmyadmin
+
+nano /etc/httpd/conf.d/phpmyadmin.conf  # après cette commande remplir le fichier
+
+Alias /phpmyadmin /usr/share/phpMyAdmin
+<Directory /usr/share/phpMyAdmin/>
+    AddDefaultCharset UTF-8
+    <IfModule mod_authz_core.c>
+        # Apache 2.4
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        # Apache 2.2
+        Order Deny,Allow
+        Deny from All
+        Allow from 127.0.0.1
+        Allow from ::1
+    </IfModule>
+</Directory>
+
+*ensuite fermer le fichier et tester ceci dans le navigateur :
+
+http://localhost/phpmyadmin
+password : mariadb password
+username : root
+
+
+

@@ -1,0 +1,53 @@
+@startuml
+state "En attente (Congé)" as waiting_conge
+note right of waiting_conge : En attente d'approbation
+
+state "Approuvée (Congé)" as approved_conge
+note right of approved_conge : Demande approuvée
+
+state "Rejetée (Congé)" as rejected_conge
+note right of rejected_conge : Demande rejetée
+
+[*] --> waiting_conge
+waiting_conge --> approved_conge: Approuver par RH si validée et conforme
+waiting_conge --> rejected_conge: Rejeter par RH si non validée ou incomplète
+approved_conge --> waiting_conge: Réouvrir par RH si nouvelle information ou erreur
+rejected_conge --> waiting_conge: Réexaminer par RH si nouvelle justification ou preuve
+
+state "Soumise (Candidature)" as submitted_candidature
+note right of submitted_candidature : Candidature soumise
+
+state "En cours d'examen (Candidature)" as under_review_candidature
+note right of under_review_candidature : En cours d'examen
+
+state "Approuvée (Candidature)" as approved_candidature
+note right of approved_candidature : Candidature approuvée
+
+state "Rejetée (Candidature)" as rejected_candidature
+note right of rejected_candidature : Candidature rejetée
+
+[*] --> submitted_candidature
+submitted_candidature --> under_review_candidature: En cours d'examen après vérification des documents
+under_review_candidature --> approved_candidature: Approuver par RH si tous critères remplis
+under_review_candidature --> rejected_candidature: Rejeter par RH si critères non remplis
+approved_candidature --> under_review_candidature: Réexaminer par RH si nouvelle information ou contestation
+rejected_candidature --> under_review_candidature: Réexaminer par RH si nouvelle preuve ou réclamation
+
+state "Proposé (Contrat)" as proposed_contract
+note right of proposed_contract : Contrat proposé
+
+state "Signé (Contrat)" as signed_contract
+note right of signed_contract : Contrat signé
+
+state "En cours (Contrat)" as ongoing_contract
+note right of ongoing_contract : Contrat en cours
+
+state "Terminé (Contrat)" as terminated_contract
+note right of terminated_contract : Contrat terminé
+
+[*] --> proposed_contract
+proposed_contract --> signed_contract: Signer par les parties après négociation et accord
+signed_contract --> ongoing_contract: Entrer en vigueur après signature et validation
+ongoing_contract --> terminated_contract: Expire ou résilié à la fin de la période ou en cas de non-respect des termes
+
+@enduml

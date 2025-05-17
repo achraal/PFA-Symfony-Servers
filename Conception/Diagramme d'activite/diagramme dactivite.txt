@@ -1,0 +1,27 @@
+@startuml
+start
+:Accéder à l'application;
+
+if (Gérer candidatures?) then (Oui)
+  :Afficher liste des candidatures;
+  if (Approuver/rejeter candidature?) then (Oui)
+    :Approuver ou rejeter candidature;
+    :Mettre à jour statut candidature;
+  endif
+else (Non)
+  if (Gérer employés?) then (Oui)
+    :Consulter informations employé;
+    if (Gérer contrats?) then (Oui)
+      :Créer ou modifier contrat;
+    endif
+    if (Gérer demandes de congés?) then (Oui)
+      :Approuver ou rejeter demande de congé;
+    endif
+    if (Consulter feuilles de temps?) then (Oui)
+      :Consulter feuille de temps;
+    endif
+  endif
+endif
+
+stop
+@enduml

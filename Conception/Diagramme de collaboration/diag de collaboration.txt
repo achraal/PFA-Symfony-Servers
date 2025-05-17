@@ -1,0 +1,59 @@
+@startuml
+class RH {
+  + accederApplication()
+  + gérerCandidatures()
+  + gérerEmployés()
+  + gérerContrats()
+  + gérerDemandesConges()
+  + gérerFeuillesTemps()
+}
+
+class Employe {
+  + getEmployeData()
+  + soumettreFeuilleTemps()
+  + soumettreDemandeConge()
+}
+
+class Candidature {
+  + getCandidatureData()
+}
+
+class Contrat {
+  + getContratData()
+}
+
+class DemandeConge {
+  + getDemandeCongeData()
+}
+
+class Timesheet {
+  + getTimesheetData()
+}
+
+class HTTPD {
+  + traiterRequete()
+  + afficherFormulaire()
+  + afficherConfirmation()
+}
+
+class Symfony {
+  + recupererDonnees()
+  + enregistrerDonnees()
+  + mettreAJourDonnees()
+}
+
+class MariaDB {
+  + retournerDonnees()
+  + confirmerEnregistrement()
+}
+
+RH --* HTTPD
+HTTPD --* Symfony
+Symfony --* MariaDB
+Symfony --* Employe
+Symfony --* Candidature
+Symfony --* Contrat
+Symfony --* DemandeConge
+Symfony --* Timesheet
+
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+package "Application Symfony" {
+  component "Module Gestion Candidatures" as Candidatures
+  component "Module Gestion Employés" as Employes
+  component "Module Gestion Contrats" as Contrats
+  component "Module Gestion Congés" as Conges
+  component "Module Gestion Feuilles de Temps" as Timesheet
+}
+
+component "Base de Données (MariaDB)" as DB
+component "Serveur Web (HTTPD)" as HTTPD
+component "Serveur DNS (BIND)" as DNS
+component "Serveur DHCP (DHCPD)" as DHCP
+
+HTTPD --> Candidatures
+HTTPD --> Employes
+HTTPD --> Contrats
+HTTPD --> Conges
+HTTPD --> Timesheet
+
+Candidatures --> DB
+Employes --> DB
+Contrats --> DB
+Conges --> DB
+Timesheet --> DB
+
+DNS --> HTTPD
+DHCP --> HTTPD
+@enduml

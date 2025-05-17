@@ -1,0 +1,46 @@
+@startuml
+left to right direction
+
+actor "Responsable RH" as RH
+
+rectangle GRH {
+    (Gérer Candidatures) as GestionCandidatures
+    (Gérer Employés) as GestionEmployes
+    (Gérer Contrats) as GestionContrats
+    (Gérer Demandes de Congés) as GestionConges
+    (Gérer Timesheet) as GestionFeuillesTemps
+}
+
+rectangle "Serveur Fedora 41" {
+    component HTTPD
+    component BIND
+    component DHCPD
+    component [Symfony App] as symfony
+    component MariaDB
+
+    HTTPD --> symfony
+    symfony --> MariaDB
+    DHCPD --> HTTPD
+    BIND --> HTTPD
+}
+
+RH -- (GestionCandidatures)
+RH -- (GestionEmployes)
+RH -- (GestionContrats)
+RH -- (GestionConges)
+RH -- (GestionFeuillesTemps)
+
+(GestionCandidatures) --> (GestionEmployes)
+(GestionEmployes) .> (GestionContrats) : include
+(GestionEmployes) .> (GestionConges) : include
+(GestionEmployes) .> (GestionFeuillesTemps) : include
+
+RH --> HTTPD
+
+(GestionCandidatures) ..> HTTPD : utilise
+(GestionEmployes) ..> HTTPD : utilise
+(GestionContrats) ..> HTTPD : utilise
+(GestionConges) ..> HTTPD : utilise
+(GestionFeuillesTemps) ..> HTTPD : utilise
+
+@enduml

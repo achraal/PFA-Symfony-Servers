@@ -1,0 +1,20 @@
+@startuml
+participant RH as "Responsable RH"
+participant Employe as "Employé"
+participant HTTPD as "Serveur HTTPD"
+participant Symfony as "Application Symfony"
+participant MariaDB as "Base de Données"
+
+RH->>HTTPD: Accéder à l'application
+HTTPD->>Symfony: Traiter la requête
+Symfony->>MariaDB: Récupérer les données employé
+MariaDB->>Symfony: Retourner les données
+Symfony->>HTTPD: Afficher les formulaires
+HTTPD->>RH: Afficher le formulaire
+RH->>HTTPD: Soumettre les demandes
+HTTPD->>Symfony: Traiter les demandes
+Symfony->>MariaDB: Enregistrer les demandes
+MariaDB->>Symfony: Confirmer l'enregistrement
+Symfony->>HTTPD: Afficher la confirmation
+HTTPD->>RH: Afficher la confirmation
+@enduml
